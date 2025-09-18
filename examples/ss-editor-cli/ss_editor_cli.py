@@ -18,7 +18,7 @@ def main(url):
         click.echo("Set FIRECRAWL_API_KEY and GEMINI_API_KEY environment variables.")
         return
 
-    # Step 1: Capture screenshot with Firecrawl
+    # Capture screenshot with Firecrawl
     headers = {"Authorization": f"Bearer {FIRECRAWL_API_KEY}", "Content-Type": "application/json"}
     payload = {
         "url": url,
@@ -35,23 +35,18 @@ def main(url):
     resp.raise_for_status()
     firecrawl_json = resp.json()
     img_url = None
-    # Try new structure: data.actions.screenshots[0]
     try:
         img_url = firecrawl_json["data"]["metadata"]["screenshot"]
     except (KeyError, IndexError, TypeError):
         pass
     if not img_url:
         click.echo("Failed to get screenshot URL from Firecrawl.")
-        with open("firecrawl_response.json", "w") as f:
-            import json
-            json.dump(firecrawl_json, f, indent=2)
-        click.echo("Full Firecrawl API response saved to firecrawl_response.json")
         return
     img_data = httpx.get(img_url).content
     with open("screenshot.png", "wb") as f:
         f.write(img_data)
 
-    # Step 2: Send to Gemini for creative editing
+    # Send to Gemini for creative editing
     click.echo("Editing screenshot with Gemini...")
     gemini_headers = {"Content-Type": "application/json"}
     params = {"key": GEMINI_API_KEY}
@@ -75,7 +70,7 @@ def main(url):
     if not candidates:
         click.echo("No edited image returned from Gemini.")
         return
-    # Find the first image in the response (using inlineData/mimeType as per actual API)
+   
     parts = candidates[0]["content"]["parts"]
     edited_img_b64 = None
     for part in parts:
@@ -84,10 +79,6 @@ def main(url):
             break
     if not edited_img_b64:
         click.echo("No image data found in Gemini response.")
-        with open("gemini_response.json", "w") as f:
-            import json
-            json.dump(gemini_resp.json(), f, indent=2)
-        click.echo("Full Gemini API response saved to gemini_response.json")
         return
     import base64
     edited_img = base64.b64decode(edited_img_b64)
