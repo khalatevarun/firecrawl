@@ -1,0 +1,14 @@
+[project]
+name = "ss-editor-cli"
+description = "CLI to capture website screenshots with Firecrawl and edit with Gemini 2.5 Flash."
+version = "0.1.0"
+authors = ["Varun Khalate <khalatevarun@gmail.com>"]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "httpx",
+    "click"
+]
+
+[project.scripts]
+ss-editor-cli = "ss_editor_cli:main"
